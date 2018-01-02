@@ -15,12 +15,17 @@ time, ...)
 ### Installation
 
 ```Bash
+# install Rust if necessary
 curl https://sh.rustup.rs -sSf | sh
 # reload shell and check installation:
 rustc --version
 
+# build project
 cargo build
 ./target/debug/journal --help
+
+# prepare file structure
+mkdir -p $HOME/.jrnl/notes
 ```
 
 

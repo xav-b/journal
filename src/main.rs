@@ -9,6 +9,10 @@ use std::fs::OpenOptions;
 use std::time::{SystemTime, UNIX_EPOCH};
 use std::fs;
 
+// TODO use environment variables and flags to customize
+static JRNL_HOME: str = "~/.jrnl"
+static JRNL_LOG: str = "~/.jrnl/events.log"
+
 #[derive(Debug)]
 struct Note {
     title: String,
@@ -21,7 +25,7 @@ struct Note {
 impl Note {
     fn tmp_file(&self) -> String {
         // determinist and unique filename
-        format!("/tmp/{}.{}.md", self.project, str::replace(&self.title, " ", "-"))
+        format!("/{}/notes/{}.{}.md", JRNL_HOME, self.project, str::replace(&self.title, " ", "-"))
     }
 
     fn edit(&self, user_editor: String) {
@@ -63,7 +67,7 @@ fn edit_note(matches: &ArgMatches) {
     // https://stackoverflow.com/questions/26643688/how-to-split-a-string-in-rust
     let event_log = format!("event={} tags={} filename={} updated_at={}\n", "edit", tags, note.tmp_file(), note.updated_at);
 
-    let fd = match OpenOptions::new().create(true).append(true).open("/tmp/journal.log") {
+    let fd = match OpenOptions::new().create(true).append(true).open(JRNL_LOG) {
         Ok(file) => file,
         Err(why) => panic!("at the Disco: {}", why.description()),
     };
@@ -75,7 +79,7 @@ fn edit_note(matches: &ArgMatches) {
 
 fn remove_jounral() {
     // FIXME share journal name...
-    fs::remove_file("/tmp/journal.log").unwrap_or_else(|why| {
+    fs::remove_file(JRNL_LOG).unwrap_or_else(|why| {
         println!("failed to remove file: {:?}", why.kind());
     });
     // NOTE should I also remove all the snippets ? cli flag ?
