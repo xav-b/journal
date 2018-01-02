@@ -7,6 +7,7 @@ use std::error::Error;
 use std::io::{Write, BufWriter};
 use std::fs::OpenOptions;
 use std::time::{SystemTime, UNIX_EPOCH};
+use std::fs;
 
 #[derive(Debug)]
 struct Note {
@@ -14,7 +15,7 @@ struct Note {
     project: String,
     // TODO tags, datetime
 
-    created_at: u64,
+    updated_at: u64,
 }
 
 impl Note {
@@ -41,7 +42,7 @@ fn new_note(title: String) -> Note {
         title,
         // TODO read project from some kind of persistent info
         project: String::from("training"),
-        created_at: since_the_epoch.as_secs(),
+        updated_at: since_the_epoch.as_secs(),
     }
 }
 
@@ -60,7 +61,7 @@ fn edit_note(matches: &ArgMatches) {
     note.edit(editor());
 
     // https://stackoverflow.com/questions/26643688/how-to-split-a-string-in-rust
-    let event_log = format!("event={} tags={} filename={} created_at={}\n", "edit", tags, note.tmp_file(), note.created_at);
+    let event_log = format!("event={} tags={} filename={} updated_at={}\n", "edit", tags, note.tmp_file(), note.updated_at);
 
     let fd = match OpenOptions::new().create(true).append(true).open("/tmp/journal.log") {
         Ok(file) => file,
@@ -72,6 +73,14 @@ fn edit_note(matches: &ArgMatches) {
     writer.write_all(event_log.as_bytes()).expect("unable to log event");
 }
 
+fn remove_jounral() {
+    // FIXME share journal name...
+    fs::remove_file("/tmp/journal.log").unwrap_or_else(|why| {
+        println!("failed to remove file: {:?}", why.kind());
+    });
+    // NOTE should I also remove all the snippets ? cli flag ?
+}
+
 
 fn main() {
     // TODO use subcommmands
@@ -80,6 +89,8 @@ fn main() {
                        .version("0.1.0")
                        .about("structure micro knowledge")
                        .author("Xavier B.")
+                       .subcommand(SubCommand::with_name("clear")
+                                   .about("reset journal content"))
                        .subcommand(SubCommand::with_name("edit")
                                    .about("edit a new or existing note")
                                    .arg(Arg::with_name("tags")
@@ -95,7 +106,8 @@ fn main() {
                        .get_matches();
 
     match matches.subcommand() {
-        ("edit", Some(m)) => edit_note(m),
-        _                 => {},  // Either no subcommand or one not tested for...
+        ("edit", Some(m))  => edit_note(m),
+        ("clear", Some(_)) => remove_jounral(),
+        _                  => {},  // Either no subcommand or one not tested for...
     }
 }

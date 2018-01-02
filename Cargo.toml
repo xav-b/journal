@@ -1,6 +1,6 @@
 [package]
 
-name = "journal"
+name = "jrnl"
 version = "0.1.0"
 authors = [ "Xavier Bruhiere <xavier.bruhiere@gmail.com>" ]
 

@@ -27,3 +27,4 @@ cargo build
 ### Resources
 
 - [Vim setup](http://seenaburns.com/vim-setup-for-rust/)
+- [Rust book - 2nd edition](https://doc.rust-lang.org/book/second-edition/ch01-00-introduction.html)
